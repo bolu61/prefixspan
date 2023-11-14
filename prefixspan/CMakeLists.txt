@@ -1,2 +1,2 @@
-add_library(prefixspan src/prefixspan.cxx)
-set_property(TARGET prefixspan PROPERTY CXX_STANDARD 20)
+add_library(prefixspan INTERFACE src/prefixspan.hxx)
+target_include_directories(prefixspan INTERFACE $<BUILD_INTERFACE:${PROJECT_INCLUDE_DIR}> $<INSTALL_INTERFACE:${CMAKE_ISNTALL_INCLUDEDIR}>)
