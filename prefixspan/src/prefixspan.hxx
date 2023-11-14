@@ -4,6 +4,7 @@
 #include <set>
 #include <variant>
 #include <ranges>
+#include <memory>
 
 namespace prefixspan {
     template<typename node_t=std::monostate, typename edge_t=std::monostate>
@@ -30,7 +31,7 @@ namespace prefixspan {
         static auto rooted_at(graph<node_t, edge_t>& g, graph<>::index_t const& r);
     private:
         graph<node_t, edge_t>::index_t root;
-        std::shared_ptr<graph<node_t, edge_t>> graph;
+        std::shared_ptr<graph<node_t, edge_t>> g;
 
     };
 
