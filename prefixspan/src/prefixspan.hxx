@@ -76,23 +76,12 @@ bool graph<node_t, edge_t>::insert(
 }
 
 namespace prefixspan::core {
-	template<typename T, typename S>
-	requires std::ranges::random_access_range<S> &&
-	  std::same_as<T, std::ranges::range_value_t<S>>
-	auto advance_to(S const & sequence, S const & symbols);
-
 	template<typename T, typename R>
 	requires std::ranges::random_access_range<R> &&
 	  std::ranges::random_access_range<std::ranges::range_value_t<R>> &&
 	  std::same_as<T, std::ranges::range_value_t<std::ranges::range_value_t<R>>>
 	void recbuild(graph<unsigned int, T> g, R const & sequences);
 } // namespace prefixspan::core
-
-template<typename T, typename R>
-requires std::ranges::random_access_range<R> &&
-  std::ranges::random_access_range<std::ranges::range_value_t<R>> &&
-  std::same_as<T, std::ranges::range_value_t<std::ranges::range_value_t<R>>>
-graph<unsigned int, T> recbuild(graph<unsigned int, T> g, R const & sequences);
 
 template<typename T, typename R>
 requires std::ranges::random_access_range<R> &&
