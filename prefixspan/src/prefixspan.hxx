@@ -1,54 +1,111 @@
 #pragma once
 
 #include <map>
+#include <memory>
+#include <ranges>
 #include <set>
 #include <variant>
-#include <ranges>
-#include <memory>
 
 namespace prefixspan {
-    template<typename node_t=std::monostate, typename edge_t=std::monostate>
-    struct graph {
-        using index_t = unsigned int;
-        static auto insert(graph<node_t, edge_t> &g, index_t const &v, node_t value) {
-            return g.node.insert({v, value});
-        }
-        static auto insert(graph<node_t, edge_t> & g, index_t const& u, index_t const& v, edge_t value) {
-            return g.edge.insert({{u, v}, value});
-        }
-        static auto successors(graph<node_t, edge_t> const& g, index_t const& u) {
-            return g.succ.equal_range(u);
-        }
+	template<typename node_t = std::monostate, typename edge_t = std::monostate>
+	struct graph {
+		using index_t = unsigned int;
 
-    private:
-        std::map<index_t, node_t> node;
-        std::map<std::pair<index_t, index_t>, edge_t> edge;
-        std::multimap<index_t, index_t> succ;
-    };
+		static bool
+		insert(graph<node_t, edge_t> & g, index_t const & v, node_t value);
 
-    template<typename node_t=std::monostate, typename edge_t=std::monostate>
-    struct tree {
-        static auto rooted_at(graph<node_t, edge_t>& g, graph<>::index_t const& r);
-    private:
-        graph<node_t, edge_t>::index_t root;
-        std::shared_ptr<graph<node_t, edge_t>> g;
+		static bool insert(
+		  graph<node_t, edge_t> & g,
+		  index_t const & u,
+		  index_t const & v,
+		  edge_t value
+		);
 
-    };
+		static std::vector<index_t>
+		successors(graph<node_t, edge_t> const & g, index_t const & u);
 
-    template <std::ranges::random_access_range S>
-    graph<unsigned int, std::ranges::range_value_t<S>> build(S const& sequence) {
-        using T = std::ranges::range_value_t<S>;
+		private:
+		std::map<index_t, node_t> node;
+		std::map<std::pair<index_t, index_t>, edge_t> edge;
+		std::multimap<index_t, index_t> succ;
+	};
 
-        auto alphabet = std::set<T>(sequence.begin(), sequence.end());
+	template<typename node_t = std::monostate, typename edge_t = std::monostate>
+	struct tree {
+		static auto
+		rooted_at(graph<node_t, edge_t> & g, graph<>::index_t const & r);
+		private:
+		graph<node_t, edge_t>::index_t root;
+		std::shared_ptr<graph<node_t, edge_t>> g;
+	};
 
-        auto g = graph<unsigned int, T>();
-        graph<unsigned int, T>::insert(g, 0, 0);
+	template<typename T, typename R>
+	requires std::ranges::random_access_range<R> &&
+	  std::ranges::random_access_range<std::ranges::range_value_t<R>> &&
+	  std::same_as<T, std::ranges::range_value_t<std::ranges::range_value_t<R>>>
+	auto build(R const & sequences);
 
-        auto worklist = std::vector<graph<>::index_t>();
+	template<typename T, typename S>
+	requires std::ranges::random_access_range<S> &&
+	  std::same_as<T, std::ranges::range_value_t<S>>
+	auto sliding(S const & sequence, unsigned int width, unsigned int stride);
 
-        for (const T &s : sequence) {
-            // asdfasdf
-        }
-        return g;
-    };
+}; // namespace prefixspan
+
+using namespace prefixspan;
+
+template<typename node_t, typename edge_t>
+bool graph<node_t, edge_t>::insert(
+  graph<node_t, edge_t> & g,
+  graph<>::index_t const & v,
+  node_t value
+) {
+	const auto [it, success] = g.node.insert({ v, value });
+	return success;
+}
+
+template<typename node_t, typename edge_t>
+bool graph<node_t, edge_t>::insert(
+  graph<node_t, edge_t> & g,
+  graph<>::index_t const & u,
+  graph<>::index_t const & v,
+  edge_t value
+) {
+	const auto [it, success] = g.node.insert({ { u, v }, value });
+	return success;
+}
+
+namespace prefixspan::core {
+	template<typename T, typename S>
+	requires std::ranges::random_access_range<S> &&
+	  std::same_as<T, std::ranges::range_value_t<S>>
+	auto advance_to(S const & sequence, S const & symbols);
+
+	template<typename T, typename R>
+	requires std::ranges::random_access_range<R> &&
+	  std::ranges::random_access_range<std::ranges::range_value_t<R>> &&
+	  std::same_as<T, std::ranges::range_value_t<std::ranges::range_value_t<R>>>
+	void recbuild(graph<unsigned int, T> g, R const & sequences);
+} // namespace prefixspan::core
+
+template<typename T, typename R>
+requires std::ranges::random_access_range<R> &&
+  std::ranges::random_access_range<std::ranges::range_value_t<R>> &&
+  std::same_as<T, std::ranges::range_value_t<std::ranges::range_value_t<R>>>
+graph<unsigned int, T> recbuild(graph<unsigned int, T> g, R const & sequences);
+
+template<typename T, typename R>
+requires std::ranges::random_access_range<R> &&
+  std::ranges::random_access_range<std::ranges::range_value_t<R>> &&
+  std::same_as<T, std::ranges::range_value_t<std::ranges::range_value_t<R>>>
+auto build(R const & sequences) {
+	auto alphabet = std::set<T>();
+	for (auto s : sequences) {
+		alphabet.insert(s.begin(), s.end());
+	}
+
+	auto g = graph<unsigned int, T>();
+	graph<unsigned int, T>::insert(g, 0, 0);
+
+	return g;
 };
