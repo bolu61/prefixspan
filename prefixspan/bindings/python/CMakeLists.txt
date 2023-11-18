@@ -14,7 +14,7 @@ execute_process(
 list(APPEND CMAKE_PREFIX_PATH "${NB_DIR}")
 find_package(nanobind CONFIG REQUIRED)
 
-nanobind_add_module(prefixspan-python bindings.cxx)
+nanobind_add_module(prefixspan-python src/bindings.cxx)
 set_target_properties(prefixspan-python PROPERTIES OUTPUT_NAME "prefixspan")
 target_include_directories(prefixspan-python PRIVATE "${PROJECT_SOURCE_DIR}/prefixspan/src")
 target_link_libraries(prefixspan-python PRIVATE prefixspan)

@@ -118,4 +118,4 @@ SpacesInParens: Never
 SpacesInSquareBrackets: false
 Standard: Latest
 TabWidth: 2
-UseTab: ForIndentation
+UseTab: Never
