@@ -5,5 +5,3 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
 
 add_subdirectory(prefixspan)
-add_subdirectory(bindings/python)
-
