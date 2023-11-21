@@ -1,4 +1,4 @@
-find_package(Python 3.11 COMPONENTS Interpreter Development.Module REQUIRED)
+find_package(Python 3.11 REQUIRED COMPONENTS Interpreter Development.Module OPTIONAL_COMPONENTS Development.SABIModule)
 
 # default to release build
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -14,7 +14,8 @@ execute_process(
 list(APPEND CMAKE_PREFIX_PATH "${NB_DIR}")
 find_package(nanobind CONFIG REQUIRED)
 
-nanobind_add_module(prefixspan-python src/bindings.cxx)
-set_target_properties(prefixspan-python PROPERTIES OUTPUT_NAME "prefixspan")
+nanobind_add_module(prefixspan-python STABLE_ABI src/bindings.cxx)
 target_include_directories(prefixspan-python PRIVATE "${PROJECT_SOURCE_DIR}/prefixspan/src")
 target_link_libraries(prefixspan-python PRIVATE prefixspan)
+
+install(TARGETS prefixspan-python LIBRARY DESTINATION prefixspan)
