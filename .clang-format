@@ -50,7 +50,7 @@ ColumnLimit: 80
 CompactNamespaces: false
 ConstructorInitializerIndentWidth: 2
 ContinuationIndentWidth: 2
-Cpp11BracedListStyle: false
+Cpp11BracedListStyle: true
 EmptyLineAfterAccessModifier: Leave
 EmptyLineBeforeAccessModifier: Leave
 FixNamespaceComments: true
@@ -67,8 +67,6 @@ IndentWrappedFunctionNames: false
 InsertBraces: true
 InsertNewlineAtEOF: true
 InsertTrailingCommas: Wrapped
-JavaScriptQuotes: Single
-JavaScriptWrapImports: true
 KeepEmptyLinesAtEOF: false
 KeepEmptyLinesAtStartOfBlocks: false
 LambdaBodyIndentation: Signature
