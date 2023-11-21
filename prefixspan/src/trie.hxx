@@ -13,7 +13,7 @@ namespace prefixspan {
     };
     
     auto insert(key_t const & key) {
-      return this->subtries.emplace(key);
+      return this->subtries.emplace(key, std::move(trie<key_t>()));
     }
   };
 }; // namespace prefixspan

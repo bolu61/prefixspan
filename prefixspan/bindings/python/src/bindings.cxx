@@ -14,7 +14,7 @@ NB_MODULE(prefixspan, m) {
   nanobind::bind_vector<sequence_t>(m, "sequence");
   nanobind::bind_vector<database_t>(m, "database");
 
-  m.def("make", [](database_t const & database) {
-    return prefixspan::make<database_t, data_t>(database);
+  m.def("make", [](database_t const & database, std::size_t const & minsup) {
+    return prefixspan::make<database_t, data_t>(database, minsup);
   });
 }
