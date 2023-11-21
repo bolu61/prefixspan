@@ -1,35 +1,38 @@
 #pragma once
 
-#include "./graph.hxx"
-#include "./ref.hxx"
-#include "./tree.hxx"
+#include "./trie.hxx"
 
 #include <map>
-#include <memory>
 #include <ranges>
-#include <set>
-#include <variant>
 
 namespace prefixspan {
+  // todo: implement function of projected database
 
-  template<typename symbol_t>
-  class PrefixTree {
-    Tree<symbol_t> t;
-
-    public:
-
-    using index_t = Tree<symbol_t>::index_t;
-  };
-
-  namespace core {
-    template<typename range_t, typename value_t>
-    concept range = std::ranges::random_access_range<range_t> &&
-      std::same_as<std::ranges::range_value_t<range_t>, value_t>;
-  }; // namespace core
-
-  template<typename symbol_t>
-  PrefixTree<symbol_t> make(auto & sequence) {
+  template<typename database_t, typename symbol_t>
+  requires std::ranges::range<database_t> &&
+    std::ranges::range<std::ranges::range_value_t<database_t>> &&
+    std::same_as<
+             std::ranges::range_value_t<std::ranges::range_value_t<database_t>>,
+             symbol_t>
+  trie<symbol_t> make(database_t const & database, std::size_t const & minsup) {
     // todo @bolu61
+    trie<symbol_t> t;
+
+    std::map<symbol_t, std::size_t> count;
+    for (auto sequence : database) {
+      for (symbol_t symbol : sequence) {
+        count[symbol] += 1;
+      }
+    }
+
+    for (auto [symbol, c] : count) {
+      if (c >= minsump) {
+        // todo: project, recurse, then insert
+        t.insert(symbol);
+      }
+    }
+
+    return t;
   }
 
 }; // namespace prefixspan
