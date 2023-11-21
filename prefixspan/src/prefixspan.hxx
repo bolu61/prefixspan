@@ -26,7 +26,7 @@ namespace prefixspan {
     }
 
     for (auto [symbol, c] : count) {
-      if (c >= minsump) {
+      if (c >= minsup) {
         // todo: project, recurse, then insert
         t.insert(symbol);
       }
