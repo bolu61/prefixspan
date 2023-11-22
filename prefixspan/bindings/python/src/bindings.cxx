@@ -11,6 +11,7 @@
 #include <string>
 #include <sstream>
 #include <iterator>
+#include <numeric>
 
 namespace nb = nanobind;
 namespace ps = prefixspan;
@@ -28,13 +29,8 @@ std::string stringify(prefixspan::trie<data_t> const & t) {
   for (auto const & [symbol, next] : t.unfix()) {
     strings.emplace_back(std::to_string(symbol) + ',' + stringify(next) + ";");
   }
-  std::ostringstream out;
-  std::copy(
-    strings.begin(),
-    strings.end(),
-    std::ostream_iterator<std::string>(out, "")
-  );
-  return out.str();
+
+  return std::reduce(strings.begin(), strings.end());
 }
 
 NB_MODULE(prefixspan_python_ext, m) {
@@ -59,7 +55,9 @@ NB_MODULE(prefixspan_python_ext, m) {
       },
       nanobind::keep_alive<0, 1>()
     )
-    .def("__repr__", &stringify);
+    .def("__repr__", [](ps::trie<data_t> const & t) {
+      return "<trie " + stringify(t) + ">";
+    });
 
   m.def(
     "make",
