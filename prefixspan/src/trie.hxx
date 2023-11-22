@@ -22,7 +22,7 @@ namespace prefixspan {
       return this->subtries.contains(key);
     }
 
-    auto const & unfix() const {
+    std::map<key_t, trie<key_t>> const & unfix() const {
       return this->subtries;
     }
 
