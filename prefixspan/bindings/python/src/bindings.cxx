@@ -5,6 +5,7 @@
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/vector.h>
 #include <nanobind/stl/string.h>
+#include <nanobind/stl/pair.h>
 #include <nanobind/make_iterator.h>
 #include <vector>
 #include <string>
@@ -36,7 +37,7 @@ std::string stringify(prefixspan::trie<data_t> const & t) {
   return out.str();
 }
 
-NB_MODULE(prefixspan, m) {
+NB_MODULE(prefixspan_python_ext, m) {
   nanobind::class_<prefixspan::trie<data_t>>(m, "trie")
     .def(
       "__getitem__",
