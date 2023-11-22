@@ -49,7 +49,7 @@ NB_MODULE(prefixspan_python_ext, m) {
     .def(
       "__iter__",
       [](prefixspan::trie<data_t> const & t) {
-        auto iterator = t.unfix();
+        auto const & iterator = t.unfix();
         return nanobind::make_iterator(
           nanobind::type<prefixspan::trie<data_t>>(),
           "iterator",
