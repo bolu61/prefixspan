@@ -30,3 +30,5 @@ Source = "https://github.com/bolu61/prefixspan"
 minimum-version = "0.4"
 build-dir = "build/{wheel_tag}"
 wheel.py-api = "cp312"
+wheel.packages = ["prefixspan/bindings/python/src/prefixspan"]
+
