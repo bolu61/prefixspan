@@ -2,13 +2,24 @@
 
 #include <map>
 #include <ranges>
+#include <memory>
 
 namespace prefixspan {
   template<typename key_t>
   class trie {
     std::map<key_t, trie<key_t>> subtries;
 
+    trie(trie<key_t> const & other) = delete;
+
+    trie<key_t> & operator=(trie<key_t> const & other) = delete;
+
     public:
+
+    trie() noexcept = default;
+    
+    trie(trie<key_t> && other) noexcept = default;
+
+    trie<key_t> & operator=(trie<key_t> && other) noexcept = default;
 
     auto insert(key_t const & key, trie<key_t> && tries) {
       return this->subtries.emplace(key, std::move(tries));
@@ -18,8 +29,12 @@ namespace prefixspan {
       return this->subtries.emplace(key, std::move(trie<key_t>()));
     }
 
-    bool contains(key_t const & key) {
+    bool contains(key_t const & key) const {
       return this->subtries.contains(key);
+    }
+
+    std::map<key_t, trie<key_t>> & unfix() {
+      return this->subtries;
     }
 
     std::map<key_t, trie<key_t>> const & unfix() const {
