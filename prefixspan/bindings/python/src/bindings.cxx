@@ -19,7 +19,7 @@
 namespace nb = nanobind;
 namespace ps = prefixspan;
 
-using data_t = unsigned int;
+using data_t = unsigned long;
 using sequence_t = nb::ndarray<data_t>;
 using database_t = std::vector<sequence_t>;
 
