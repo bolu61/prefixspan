@@ -1,1 +1,1 @@
-from .prefixspan_python_ext import make, trie
+from .prefixspan_python_ext import * # type: ignore
