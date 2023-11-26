@@ -36,8 +36,17 @@ std::string stringify(ps::trie<data_t> const & t) {
   return std::reduce(strings.begin(), strings.end());
 }
 
-NB_MODULE(prefixspan_python_ext, m) {
-  nanobind::class_<trie>(m, "trie")
+NB_MODULE(prefixspan, m) {
+
+  nanobind::class_<trie>(m, "prefixspan")
+    .def(
+      "__init__",
+      [](trie * t, database_t const & db, std::size_t const & minsup) {
+        new (t) std::shared_ptr(std::make_shared<const ps::trie<data_t>>(
+          ps::make<data_t, database_t>(db, minsup)
+        ));
+      }
+    )
     .def(
       "__contains__",
       [](trie t, data_t const & key) { return t->contains(key); }
@@ -63,13 +72,8 @@ NB_MODULE(prefixspan_python_ext, m) {
       },
       nanobind::keep_alive<0, 1>()
     )
+    .def("__str__", [](trie const & t) { return stringify(*t); })
     .def("__repr__", [](trie const & t) {
-      return "<trie " + stringify(*t) + ">";
+      return "<prefixspan " + stringify(*t) + ">";
     });
-
-  m.def("make", [](database_t const & db, std::size_t const & minsup) {
-    return std::make_shared<const ps::trie<data_t>>(
-      ps::make<data_t, database_t>(db, minsup)
-    );
-  });
 }
