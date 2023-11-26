@@ -7,6 +7,7 @@
 #include <memory>
 #include <nanobind/make_iterator.h>
 #include <nanobind/nanobind.h>
+#include <nanobind/ndarray.h>
 #include <nanobind/stl/pair.h>
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/vector.h>
@@ -19,7 +20,7 @@ namespace nb = nanobind;
 namespace ps = prefixspan;
 
 using data_t = std::size_t;
-using sequence_t = std::vector<data_t>;
+using sequence_t = nb::ndarray<data_t>;
 using database_t = std::vector<sequence_t>;
 
 using trie = std::shared_ptr<ps::trie<data_t> const>;
@@ -42,9 +43,14 @@ NB_MODULE(prefixspan, m) {
     .def(
       "__init__",
       [](trie * t, database_t const & db, std::size_t const & minsup) {
-        new (t) std::shared_ptr(std::make_shared<const ps::trie<data_t>>(
-          ps::make<data_t, database_t>(db, minsup)
-        ));
+        new (t) std::shared_ptr(
+          std::make_shared<const ps::trie<data_t>>(ps::make<data_t>(
+            db | std::views::transform([](auto const & a) {
+              return std::ranges::subrange(a.data(), a.data() + a.size());
+            }),
+            minsup
+          ))
+        );
       }
     )
     .def(
