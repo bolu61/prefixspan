@@ -1,8 +1,6 @@
 #pragma once
 
 #include <map>
-#include <ranges>
-#include <memory>
 
 namespace prefixspan {
   template<typename key_t>
@@ -33,14 +31,6 @@ namespace prefixspan {
       return this->subtries.contains(key);
     }
 
-    std::map<key_t, trie<key_t>> & unfix() {
-      return this->subtries;
-    }
-
-    std::map<key_t, trie<key_t>> const & unfix() const {
-      return this->subtries;
-    }
-
     auto & at(key_t const & key) {
       return this->subtries.at(key);
     }
@@ -60,5 +50,10 @@ namespace prefixspan {
     bool empty() const {
       return this->subtries.empty();
     }
+
+    const auto & unfix() const {
+      return this->subtries;
+    }
+
   };
 }; // namespace prefixspan

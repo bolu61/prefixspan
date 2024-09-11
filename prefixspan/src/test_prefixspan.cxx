@@ -26,7 +26,7 @@ std::string stringify(prefixspan::trie<symbol_t> const & t) {
 
 int main(int argc, char * argv[]) {
   std::vector<std::vector<unsigned int>> db{{0, 1, 2}, {0, 2}, {0, 2}, {0, 1}};
-  auto a = prefixspan::make<unsigned int, std::vector<std::vector<unsigned int>>>(db, 0);
+  auto a = prefixspan::prefixspan<unsigned int, std::vector<std::vector<unsigned int>>>(db, 0);
   std::cout << stringify(a) << std::endl;
 }
  

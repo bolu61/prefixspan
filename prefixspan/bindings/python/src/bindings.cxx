@@ -2,8 +2,6 @@
 #include "trie.hxx"
 
 #include <cstddef>
-#include <format>
-#include <iterator>
 #include <memory>
 #include <nanobind/make_iterator.h>
 #include <nanobind/nanobind.h>
@@ -44,7 +42,7 @@ NB_MODULE(prefixspan, m) {
       "__init__",
       [](trie * t, database_t const & db, std::size_t const & minsup) {
         new (t) std::shared_ptr(
-          std::make_shared<const ps::trie<data_t>>(ps::make<data_t>(
+          std::make_shared<const ps::trie<data_t>>(ps::prefixspan<data_t>(
             db | std::views::transform([](auto const & a) {
               return std::ranges::subrange(a.data(), a.data() + a.size());
             }),

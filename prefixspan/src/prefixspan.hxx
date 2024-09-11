@@ -2,7 +2,6 @@
 
 #include "./trie.hxx"
 
-#include <iostream>
 #include <map>
 #include <ranges>
 #include <vector>
@@ -35,7 +34,7 @@ namespace prefixspan {
   }; // namespace core
 
   template<typename symbol_t, core::database<symbol_t> database_t>
-  trie<symbol_t> make(database_t const & db, std::size_t const & minsup) {
+  trie<symbol_t> prefixspan(database_t const & db, std::size_t const & minsup) {
     trie<symbol_t> t;
 
     auto db_view = db;
@@ -50,11 +49,10 @@ namespace prefixspan {
     for (auto [symbol, c] : count) {
       if (c >= minsup) {
         auto db_new = core::project(db_view, symbol);
-        t.insert(symbol, make<symbol_t>(db_new, minsup));
+        t.insert(symbol, prefixspan<symbol_t>(db_new, minsup));
       }
     }
 
     return t;
   }
-
 }; // namespace prefixspan
