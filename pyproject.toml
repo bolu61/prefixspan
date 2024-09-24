@@ -1,12 +1,11 @@
 [build-system]
-requires = ["scikit-build-core>=0.4.3", "nanobind @ git+https://github.com/wjakob/nanobind@master"]
+requires = ["scikit-build-core", "nanobind"]
 build-backend = "scikit_build_core.build"
 
 [project]
 name = "prefixspan"
 version = "0.1.0"
-description = "Simple prefixspan implementation."
-readme = "README.md"
+description = "Bindings to a simple c++ prefixspan implementation."
 requires-python = ">=3.11"
 authors = [
   { name = "bolu", email = "bolu@bolupi.me" },
@@ -18,7 +17,6 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
-dependencies = []
 
 [project.urls]
 Homepage = "https://github.com/bolu61/prefixspan"
@@ -27,7 +25,8 @@ Issues = "https://github.com/bolu61/prefixspan/issues"
 Source = "https://github.com/bolu61/prefixspan"
 
 [tool.scikit-build]
-minimum-version = "0.4"
+minimum-version = "0.10"
 build-dir = "build/{wheel_tag}"
 wheel.py-api = "cp312"
-wheel.packages = ["prefixspan/bindings/python/src/prefixspan"]
+wheel.packages = ["bindings/python/prefixspan"]
+build.targets = ["prefixspan_python_ext"]
