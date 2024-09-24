@@ -39,7 +39,7 @@ std::string stringify(ps::trie<data_t> const & t) {
 
 NB_MODULE(prefixspan, m) {
 
-  nanobind::class_<trie>(m, "prefixspan")
+  nanobind::class_<trie>(m, "trie")
     .def(
       "__init__",
       [](trie * t, database_t const & db, std::size_t const & minsup) {
