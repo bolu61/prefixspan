@@ -1,64 +1,59 @@
 #pragma once
 
-#include <map>
-#include <ranges>
 #include <memory>
+#include <ranges>
+#include <unordered_map>
 
 namespace prefixspan {
   template<typename key_t>
   class trie {
-    std::map<key_t, trie<key_t>> subtries;
-
-    trie(trie<key_t> const & other) = delete;
-
-    trie<key_t> & operator=(trie<key_t> const & other) = delete;
+    std::size_t size;
+    std::unordered_map<key_t, trie<key_t>> unfixed;
 
     public:
 
-    trie() noexcept = default;
-    
-    trie(trie<key_t> && other) noexcept = default;
-
-    trie<key_t> & operator=(trie<key_t> && other) noexcept = default;
+    trie() noexcept {
+      this->size = 0;
+    };
 
     auto insert(key_t const & key, trie<key_t> && tries) {
-      return this->subtries.emplace(key, std::move(tries));
+      return this->unfixed.emplace(key, std::move(tries));
     };
 
     auto insert(key_t const & key) {
-      return this->subtries.emplace(key, std::move(trie<key_t>()));
+      return this->unfixed.emplace(key, std::move(trie<key_t>()));
     }
 
     bool contains(key_t const & key) const {
-      return this->subtries.contains(key);
+      return this->unfixed.contains(key);
     }
 
-    std::map<key_t, trie<key_t>> & unfix() {
-      return this->subtries;
+    std::map<key_t, trie<key_t>> & unfix() noexcept {
+      return this->unfixed;
     }
 
-    std::map<key_t, trie<key_t>> const & unfix() const {
-      return this->subtries;
+    std::map<key_t, trie<key_t>> const & unfix() const noexcept {
+      return this->unfixed;
     }
 
     auto & at(key_t const & key) {
-      return this->subtries.at(key);
+      return this->unfixed.at(key);
     }
 
     auto const & at(key_t const & key) const {
-      return this->subtries.at(key);
+      return this->unfixed.at(key);
     }
 
-    auto & operator[](key_t const & key) {
-      return this->at(key);
+    auto & operator[](key_t const & key) noexcept {
+      return this->unfixed[key];
     }
 
-    auto const & operator[](key_t const & key) const {
-      return this->at(key);
+    auto const & operator[](key_t const & key) const noexcept {
+      return this->unfixed[key];
     }
 
-    bool empty() const {
-      return this->subtries.empty();
+    bool empty() const noexcept {
+      return this->unfixed.empty();
     }
   };
 }; // namespace prefixspan

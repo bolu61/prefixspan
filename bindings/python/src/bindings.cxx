@@ -80,6 +80,6 @@ NB_MODULE(prefixspan, m) {
     )
     .def("__str__", [](trie const & t) { return stringify(*t); })
     .def("__repr__", [](trie const & t) {
-      return "<prefixspan " + stringify(*t) + ">";
+      return "<prefixspan.trie " + stringify(*t) + ">";
     });
 }

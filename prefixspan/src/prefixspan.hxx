@@ -1,6 +1,6 @@
 #pragma once
 
-#include "./trie.hxx"
+#include "trie.hxx"
 
 #include <iostream>
 #include <map>

@@ -10,6 +10,9 @@ requires-python = ">=3.11"
 authors = [
   { name = "bolu", email = "bolu@bolupi.me" },
 ]
+dependencies = [
+  "numpy"
+]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python",
@@ -26,7 +29,5 @@ Source = "https://github.com/bolu61/prefixspan"
 
 [tool.scikit-build]
 minimum-version = "0.10"
-build-dir = "build/{wheel_tag}"
-wheel.py-api = "cp312"
-wheel.packages = ["bindings/python/prefixspan"]
+build-dir = "build"
 build.targets = ["prefixspan_python_ext"]
