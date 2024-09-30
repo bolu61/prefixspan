@@ -67,8 +67,10 @@ IndentWrappedFunctionNames: false
 InsertBraces: true
 InsertNewlineAtEOF: true
 InsertTrailingCommas: Wrapped
-KeepEmptyLinesAtEOF: false
-KeepEmptyLinesAtStartOfBlocks: false
+KeepEmptyLines:
+    AtEndOfFile: false
+    AtStartOfBlock: false
+    AtStartOfFile: false
 LambdaBodyIndentation: Signature
 Language: Cpp
 LineEnding: LF
@@ -94,11 +96,11 @@ SpaceAfterLogicalNot: false
 SpaceAfterTemplateKeyword: false
 SpaceAroundPointerQualifiers: Both
 SpaceBeforeAssignmentOperators: true
-SpaceBeforeCasColon: false
+SpaceBeforeCaseColon: false
 SpaceBeforeCpp11BracedList: false
-SpaceBeforeCtorInitialierColon: true
+SpaceBeforeCtorInitializerColon: true
 SpaceBeforeInheritanceColon: true
-SpaceBeforeJsonColo: false
+SpaceBeforeJsonColon: false
 SpaceBeforeParens: ControlStatements
 SpaceBeforeRangeBasedForLoopColon: true
 SpaceBeforeSquareBrackets: false

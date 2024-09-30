@@ -26,7 +26,7 @@ using database_t = std::vector<sequence_t>;
 using trie = std::shared_ptr<ps::trie<data_t> const>;
 
 std::string stringify(ps::trie<data_t> const & t) {
-  if (t.empty()) {
+  if (t.size() == 0) {
     return "";
   }
   std::vector<std::string> strings;
@@ -38,13 +38,12 @@ std::string stringify(ps::trie<data_t> const & t) {
 }
 
 NB_MODULE(prefixspan, m) {
-
   nanobind::class_<trie>(m, "trie")
     .def(
       "__init__",
       [](trie * t, database_t const & db, std::size_t const & minsup) {
         new (t) std::shared_ptr(
-          std::make_shared<const ps::trie<data_t>>(ps::make<data_t>(
+          std::make_shared<ps::trie<data_t> const>(ps::make<data_t>(
             db | std::views::transform([](auto const & a) {
               return std::ranges::subrange(a.data(), a.data() + a.size());
             }),
@@ -61,7 +60,7 @@ NB_MODULE(prefixspan, m) {
       "__getitem__",
       [](trie t, data_t const & key) { return trie(t, &t->at(key)); }
     )
-    .def("empty", [](trie t) { return t->empty(); })
+    .def("__len__", [](trie t) { return t->size(); })
     .def(
       "__iter__",
       [](trie t) {

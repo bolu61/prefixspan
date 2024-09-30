@@ -1,7 +1,6 @@
 #include "prefixspan.hxx"
 
 #include <catch2/catch_test_macros.hpp>
-#include <iostream>
 #include <iterator>
 #include <sstream>
 #include <string>
@@ -11,31 +10,30 @@ using symbol = unsigned int;
 
 using database = std::vector<std::vector<symbol>>;
 
-template<typename symbol_t>
-std::string stringify(prefixspan::trie<symbol_t> const & t) {
-  if (t.empty()) {
+template class prefixspan::trie<symbol>;
+
+template<typename symbol>
+std::string stringify(prefixspan::trie<symbol> const & t) {
+  if (t.size() == 0) {
     return "";
   }
   std::vector<std::string> strings;
-  for (auto const & [symbol, next] : t.unfix()) {
-    strings.emplace_back(std::to_string(symbol) + ',' + stringify(next) + ';');
+  for (auto const & [key, next] : t.unfix()) {
+    strings.emplace_back(std::to_string(key) + ',' + stringify(next) + ';');
   }
   std::ostringstream out;
   std::ranges::copy(strings, std::ostream_iterator<std::string>(out, ""));
   return out.str();
 };
 
-std::string run_prefixspan(database const & db, std::size_t const & minsup) {
-  return stringify(
-    prefixspan::make<unsigned int, std::vector<std::vector<unsigned int>>>(
-      db,
-      minsup
-    )
-  );
-}
-
 TEST_CASE("Run prefixspan on sample input.", "[prefixspan]") {
-  std::vector<std::vector<unsigned int>>
-    sample_db{{0, 1, 2}, {0, 2}, {0, 2}, {0, 1}};
-  REQUIRE(run_prefixspan(sample_db, 3) == "0,2,;;2,;");
+  database sample_db{{0, 1, 2}, {0, 2}, {0, 2}, {0, 1}};
+  auto t = prefixspan::make<symbol>(sample_db, 3);
+  REQUIRE(stringify(t) == "0,2,;;2,;");
+  REQUIRE(t[0].size() == 4);
+  REQUIRE(t[1].size() == 0);
+  REQUIRE(t[2].size() == 3);
+  REQUIRE(t[0][0].size() == 0);
+  REQUIRE(t[0][1].size() == 0);
+  REQUIRE(t[0][2].size() == 3);
 }

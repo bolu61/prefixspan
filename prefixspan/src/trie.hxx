@@ -1,59 +1,91 @@
 #pragma once
 
-#include <memory>
-#include <ranges>
+#include <cassert>
 #include <unordered_map>
+#include <utility>
 
 namespace prefixspan {
-  template<typename key_t>
+  template<typename symbol>
   class trie {
-    std::size_t size;
-    std::unordered_map<key_t, trie<key_t>> unfixed;
+    std::size_t m_size = 0;
+    std::unordered_map<symbol, trie<symbol>> unfixed;
+    using index = std::unordered_map<symbol, trie<symbol>>;
+    using iterator = index::iterator;
+    using const_iterator = index::const_iterator;
 
     public:
 
-    trie() noexcept {
-      this->size = 0;
+    trie<symbol>() = default;
+
+    trie<symbol>(trie<symbol> const & other) noexcept = default;
+
+    trie<symbol>(trie<symbol> && other) noexcept = default;
+
+    explicit trie<symbol>(std::size_t const & count) noexcept : m_size(count){};
+
+    template<typename... arg_types>
+    iterator insert(symbol const & key, arg_types&&... args) {
+      auto [it, inserted] = unfixed.try_emplace(key, std::forward<arg_types>(args)...);
+      if (inserted) {
+        return it;
+      }
+      for (auto && [k, next] : trie<symbol>(std::forward<arg_types>(args)...)) {
+        it->second.insert(k, std::move(next));
+      }
+      return it;
     };
 
-    auto insert(key_t const & key, trie<key_t> && tries) {
-      return this->unfixed.emplace(key, std::move(tries));
+    void insert() {
+      insert(1);
     };
 
-    auto insert(key_t const & key) {
-      return this->unfixed.emplace(key, std::move(trie<key_t>()));
+    void insert(std::size_t const & count) {
+      assert(count > 0);
+      m_size += count;
+    };
+
+    trie<symbol> & at(symbol const & key) {
+      return unfixed.at(key);
     }
 
-    bool contains(key_t const & key) const {
-      return this->unfixed.contains(key);
+    trie<symbol> const & at(symbol const & key) const {
+      return unfixed.at(key);
+    };
+
+    trie<symbol> & operator[](symbol const & key) {
+      return unfixed[key];
+    };
+
+    bool contains(symbol const & key) const {
+      return unfixed.contains(key);
+    };
+
+    std::size_t size() const noexcept {
+      return m_size;
     }
 
-    std::map<key_t, trie<key_t>> & unfix() noexcept {
-      return this->unfixed;
+    std::unordered_map<symbol, trie<symbol>>::iterator begin() {
+      return unfixed.begin();
     }
 
-    std::map<key_t, trie<key_t>> const & unfix() const noexcept {
-      return this->unfixed;
+    std::unordered_map<symbol, trie<symbol>>::const_iterator begin() const {
+      return unfixed.begin();
     }
 
-    auto & at(key_t const & key) {
-      return this->unfixed.at(key);
+    std::unordered_map<symbol, trie<symbol>>::iterator end() {
+      return unfixed.end();
     }
 
-    auto const & at(key_t const & key) const {
-      return this->unfixed.at(key);
+    std::unordered_map<symbol, trie<symbol>>::const_iterator end() const {
+      return unfixed.end();
     }
 
-    auto & operator[](key_t const & key) noexcept {
-      return this->unfixed[key];
-    }
+    std::unordered_map<symbol, trie<symbol>> & unfix() noexcept {
+      return unfixed;
+    };
 
-    auto const & operator[](key_t const & key) const noexcept {
-      return this->unfixed[key];
-    }
-
-    bool empty() const noexcept {
-      return this->unfixed.empty();
-    }
+    std::unordered_map<symbol, trie<symbol>> const & unfix() const noexcept {
+      return unfixed;
+    };
   };
 }; // namespace prefixspan
