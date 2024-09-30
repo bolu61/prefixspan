@@ -26,7 +26,7 @@ std::string stringify(prefixspan::trie<symbol> const & t) {
   return out.str();
 };
 
-TEST_CASE("Run prefixspan on sample input.", "[prefixspan]") {
+TEST_CASE("simple input", "[prefixspan]") {
   database sample_db{{0, 1, 2}, {0, 2}, {0, 2}, {0, 1}};
   auto t = prefixspan::make<symbol>(sample_db, 3);
   REQUIRE(stringify(t) == "0,2,;;2,;");
@@ -36,4 +36,10 @@ TEST_CASE("Run prefixspan on sample input.", "[prefixspan]") {
   REQUIRE(t[0][0].size() == 0);
   REQUIRE(t[0][1].size() == 0);
   REQUIRE(t[0][2].size() == 3);
+}
+
+TEST_CASE("duplicate symbol in sequence", "[prefixspan]") {
+  database sample_db{{0, 1, 2, 1}};
+  auto t = prefixspan::make<symbol>(sample_db, 0);
+  REQUIRE(t[1].size() == 1);
 }
