@@ -10,28 +10,28 @@
 namespace prefixspan {
   namespace core {
     namespace dbs {
-      template<typename sequence_type>
-      using value = std::ranges::range_value_t<sequence_type>;
+      template<typename sequence>
+      using value = std::ranges::range_value_t<sequence>;
 
-      template<typename sequence_type>
-      using iterator = std::ranges::iterator_t<sequence_type>;
+      template<typename sequence>
+      using iterator = std::ranges::iterator_t<sequence>;
 
-      template<typename sequence_type, typename symbol>
-      concept sequence = std::ranges::random_access_range<sequence_type> &&
-        std::ranges::sized_range<sequence_type> &&
-        std::same_as<value<sequence_type>, symbol>;
+      template<typename sequence, typename symbol>
+      concept sequence_type = std::ranges::random_access_range<sequence> &&
+        std::ranges::sized_range<sequence> &&
+        std::same_as<value<sequence>, symbol>;
 
-      template<typename database_type, typename symbol>
-      concept database = sequence<database_type, value<database_type>> &&
-        sequence<value<database_type>, symbol>;
-
+      template<typename database, typename symbol>
+      concept database_type = sequence_type<database, value<database>> &&
+        sequence_type<value<database>, symbol>;
     } // namespace dbs
 
-    template<typename symbol, dbs::database<symbol> database>
+    template<typename symbol, dbs::database_type<symbol> database>
     auto project(database const & db, symbol const & key) {
       using iterator = dbs::iterator<const dbs::value<database>>;
-      std::vector<std::ranges::subrange<iterator>> out;
-      for (dbs::sequence<symbol> auto const & seq : db) {
+      using subrange = std::ranges::subrange<iterator>;
+      std::vector<subrange> out;
+      for (dbs::sequence_type<symbol> auto const & seq : db) {
         iterator it = std::ranges::find(seq, key);
         if (it != seq.end()) {
           out.push_back(std::ranges::subrange(++it, seq.end()));
@@ -40,8 +40,8 @@ namespace prefixspan {
       return out;
     };
 
-    template<typename symbol>
-    std::vector<symbol> unique(dbs::sequence<symbol> auto const & seq) {
+    template<typename symbol, dbs::sequence_type<symbol> sequence>
+    std::vector<symbol> unique(sequence const & seq) {
       std::vector<symbol> out(std::ranges::begin(seq), std::ranges::end(seq));
       std::ranges::sort(out);
       auto [first, last] = std::ranges::unique(out);
@@ -50,9 +50,8 @@ namespace prefixspan {
     }
   }; // namespace core
 
-  template<typename symbol>
-  trie<symbol>
-  make(core::dbs::database<symbol> auto const & db, std::size_t const & minsup) {
+  template<typename symbol, core::dbs::database_type<symbol> database>
+  trie<symbol> make(database const & db, std::size_t const & minsup) {
     trie<symbol> t(std::size(db));
 
     std::unordered_map<symbol, std::size_t> symbol_count;
