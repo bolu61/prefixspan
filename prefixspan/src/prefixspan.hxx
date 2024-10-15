@@ -51,7 +51,7 @@ namespace prefixspan {
   }; // namespace core
 
   template<typename symbol, core::dbs::database_type<symbol> database>
-  trie<symbol> make(database const & db, std::size_t const & minsup) {
+  trie<symbol> make_trie(database const & db, std::size_t const & minsup) {
     trie<symbol> t(std::size(db));
 
     std::unordered_map<symbol, std::size_t> symbol_count;
@@ -63,7 +63,7 @@ namespace prefixspan {
 
     for (auto const [k, c] : symbol_count) {
       if (c >= minsup) {
-        t.insert(k, make<symbol>(core::project<symbol>(db, k), minsup));
+        t.insert(k, make_trie<symbol>(core::project<symbol>(db, k), minsup));
       }
     }
 

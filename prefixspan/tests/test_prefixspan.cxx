@@ -14,7 +14,7 @@ template class prefixspan::trie<symbol>;
 
 template<typename symbol>
 std::string stringify(prefixspan::trie<symbol> const & t) {
-  if (t.size() == 0) {
+  if (t.count() == 0) {
     return "";
   }
   std::vector<std::string> strings;
@@ -26,20 +26,20 @@ std::string stringify(prefixspan::trie<symbol> const & t) {
   return out.str();
 };
 
+TEST_CASE("empty database", "[prefixspan]") {
+  prefixspan::trie<symbol> t = prefixspan::make_trie<symbol, database>({}, 3);
+  REQUIRE(stringify(t) == "");
+  REQUIRE(t.count() == 0);
+}
+
 TEST_CASE("simple input", "[prefixspan]") {
-  database sample_db{{0, 1, 2}, {0, 2}, {0, 2}, {0, 1}};
-  auto t = prefixspan::make<symbol>(sample_db, 3);
-  REQUIRE(stringify(t) == "0,2,;;2,;");
-  REQUIRE(t[0].size() == 4);
-  REQUIRE(t[1].size() == 0);
-  REQUIRE(t[2].size() == 3);
-  REQUIRE(t[0][0].size() == 0);
-  REQUIRE(t[0][1].size() == 0);
-  REQUIRE(t[0][2].size() == 3);
+  database sample_db{{0, 1, 2}, {0, 2, 2}, {0, 1, 1}};
+  auto t = prefixspan::make_trie<symbol>(sample_db, 2);
+  REQUIRE(stringify(t) == "0,1,;2,;;1,;2,;");
 }
 
 TEST_CASE("duplicate symbol in sequence", "[prefixspan]") {
   database sample_db{{0, 1, 2, 1}};
-  auto t = prefixspan::make<symbol>(sample_db, 0);
-  REQUIRE(t[1].size() == 1);
+  auto t = prefixspan::make_trie<symbol>(sample_db, 0);
+  REQUIRE(t[1].count() == 1);
 }

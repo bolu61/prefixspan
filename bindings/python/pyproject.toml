@@ -21,6 +21,12 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
 
+[tool.hatch.envs.test]
+dependencies = ["pytest"]
+
+[tool.hatch.envs.test.scripts]
+test = ["pytest"]
+
 [project.urls]
 Homepage = "https://github.com/bolu61/prefixspan"
 Documentation = "https://github.com/bolu61/prefixspan#readme"
@@ -29,5 +35,5 @@ Source = "https://github.com/bolu61/prefixspan"
 
 [tool.scikit-build]
 minimum-version = "0.10"
-build-dir = "build"
-build.targets = ["prefixspan_python_ext"]
+cmake.source-dir = "../.."
+build.targets = ["prefixspan_python_ext_stub"]

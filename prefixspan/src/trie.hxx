@@ -7,7 +7,7 @@
 namespace prefixspan {
   template<typename symbol>
   class trie {
-    std::size_t m_size = 0;
+    std::size_t m_count = 0;
     std::unordered_map<symbol, trie<symbol>> unfixed;
     using index = std::unordered_map<symbol, trie<symbol>>;
     using iterator = index::iterator;
@@ -21,7 +21,11 @@ namespace prefixspan {
 
     trie<symbol>(trie<symbol> && other) noexcept = default;
 
-    explicit trie<symbol>(std::size_t const & count) noexcept : m_size(count){};
+    explicit trie<symbol>(std::size_t const & count) noexcept : m_count(count){};
+
+    trie<symbol> & operator=(trie<symbol> const & other) noexcept = default;
+
+    trie<symbol> & operator=(trie<symbol> && other) noexcept = default;
 
     template<typename... arg_types>
     iterator insert(symbol const & key, arg_types&&... args) {
@@ -41,7 +45,7 @@ namespace prefixspan {
 
     void insert(std::size_t const & count) {
       assert(count > 0);
-      m_size += count;
+      m_count += count;
     };
 
     trie<symbol> & at(symbol const & key) {
@@ -60,8 +64,8 @@ namespace prefixspan {
       return unfixed.contains(key);
     };
 
-    std::size_t size() const noexcept {
-      return m_size;
+    std::size_t count() const noexcept {
+      return m_count;
     }
 
     std::unordered_map<symbol, trie<symbol>>::iterator begin() {

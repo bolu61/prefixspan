@@ -3,8 +3,6 @@
 
 #include <cstddef>
 #include <format>
-#include <iterator>
-#include <memory>
 #include <nanobind/make_iterator.h>
 #include <nanobind/nanobind.h>
 #include <nanobind/ndarray.h>
@@ -19,66 +17,76 @@
 namespace nb = nanobind;
 namespace ps = prefixspan;
 
-using data_t = unsigned long;
-using sequence_t = nb::ndarray<data_t>;
-using database_t = std::vector<sequence_t>;
+using data = unsigned long;
+using sequence = nb::ndarray<data>;
+using database = std::vector<sequence>;
 
-using trie = std::shared_ptr<ps::trie<data_t> const>;
-
-std::string stringify(ps::trie<data_t> const & t) {
-  if (t.size() == 0) {
+std::string stringify(ps::trie<data> const & t) {
+  if (t.count() == 0) {
     return "";
   }
   std::vector<std::string> strings;
   for (auto const & [symbol, next] : t.unfix()) {
-    strings.emplace_back(std::to_string(symbol) + "," + stringify(next) + ";");
+    strings.emplace_back(std::format("{},{};", symbol, stringify(next)));
   }
 
   return std::reduce(strings.begin(), strings.end());
 }
 
 NB_MODULE(prefixspan, m) {
-  nanobind::class_<trie>(m, "trie")
-    .def(
-      "__init__",
-      [](trie * t, database_t const & db, std::size_t const & minsup) {
-        new (t) std::shared_ptr(
-          std::make_shared<ps::trie<data_t> const>(ps::make<data_t>(
-            db | std::views::transform([](auto const & a) {
-              return std::ranges::subrange(a.data(), a.data() + a.size());
-            }),
-            minsup
-          ))
-        );
-      }
-    )
+  m.def(
+    "make_trie",
+    [](database const & db, std::size_t const & minsup) {
+      return ps::make_trie<data>(
+        db | std::views::transform([](sequence const & s) {
+          return std::ranges::subrange(s.data(), s.data() + s.size());
+        }),
+        minsup
+      );
+    },
+    nb::arg("db"),
+    nb::arg("minsup"),
+    nb::rv_policy::move
+  );
+
+  nb::class_<ps::trie<data>>(m, "trie")
     .def(
       "__contains__",
-      [](trie t, data_t const & key) { return t->contains(key); }
+      [](ps::trie<data> const & t, data const & key) { return t.contains(key); }
     )
     .def(
       "__getitem__",
-      [](trie t, data_t const & key) { return trie(t, &t->at(key)); }
+      [](ps::trie<data> const & t, data const & key) { return t.at(key); },
+      nb::keep_alive<0, 1>()
     )
-    .def("__len__", [](trie t) { return t->size(); })
+    .def_prop_ro("count", [](ps::trie<data> const & t) { return t.count(); })
     .def(
       "__iter__",
-      [](trie t) {
-        auto const & iterator =
-          t->unfix() | std::ranges::views::transform([&t](auto & item) {
-            return std::pair<data_t, trie>(item.first, trie(t, &item.second));
-          });
-        return nanobind::make_iterator(
-          nanobind::type<trie>(),
+      [](ps::trie<data> const & t) {
+        return nb::make_iterator(
+          nb::type<ps::trie<data>>(),
           "iterator",
-          iterator.begin(),
-          iterator.end()
+          t.begin(),
+          t.end()
         );
       },
-      nanobind::keep_alive<0, 1>()
+      nb::keep_alive<0, 1>()
     )
-    .def("__str__", [](trie const & t) { return stringify(*t); })
-    .def("__repr__", [](trie const & t) {
-      return "<prefixspan.trie " + stringify(*t) + ">";
+    .def_prop_ro(
+      "keys",
+      [](ps::trie<data> const & t) {
+        auto it = t |
+          std::ranges::views::transform([](auto & item) { return item.first; });
+        return nb::make_iterator(
+          nb::type<ps::trie<data>>(),
+          "key_iterator",
+          it.begin(),
+          it.end()
+        );
+      },
+      nb::keep_alive<0, 1>()
+    )
+    .def("__repr__", [](ps::trie<data> const & t) {
+      return "<prefixspan.trie " + stringify(t) + ">";
     });
 }
