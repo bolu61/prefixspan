@@ -17,7 +17,7 @@
 namespace nb = nanobind;
 namespace ps = prefixspan;
 
-using data = unsigned long;
+using data = unsigned int;
 using sequence = nb::ndarray<data>;
 using database = std::vector<sequence>;
 
@@ -57,9 +57,10 @@ NB_MODULE(prefixspan, m) {
     .def(
       "__getitem__",
       [](ps::trie<data> const & t, data const & key) { return t.at(key); },
+      nb::rv_policy::reference_internal,
       nb::keep_alive<0, 1>()
     )
-    .def_prop_ro("count", [](ps::trie<data> const & t) { return t.count(); })
+    .def_prop_ro("count", [](ps::trie<data> const & t) { return t.count(); }, nb::rv_policy::reference_internal)
     .def(
       "__iter__",
       [](ps::trie<data> const & t) {
