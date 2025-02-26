@@ -86,7 +86,7 @@ namespace prefixspan {
 
       for (auto const [k, c] : symbol_count) {
         if (c >= minsup) {
-          this->insert(k, trie<symbol>(core::project<symbol>(db, k), minsup));
+          this->insert(k, prefixspan<symbol>(core::project<symbol>(db, k), minsup));
         }
       }
     }
