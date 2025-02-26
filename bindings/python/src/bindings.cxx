@@ -1,5 +1,4 @@
 #include "prefixspan.hxx"
-#include "trie.hxx"
 
 #include <cstddef>
 #include <format>
@@ -37,7 +36,7 @@ NB_MODULE(prefixspan, m) {
   m.def(
     "make_trie",
     [](database const & db, std::size_t const & minsup) {
-      return ps::make_trie<data>(
+      return ps::trie<data>(
         db | std::views::transform([](sequence const & s) {
           return std::ranges::subrange(s.data(), s.data() + s.size());
         }),

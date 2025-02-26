@@ -1,38 +1,40 @@
 #pragma once
 
-#include "trie.hxx"
-
-#include <ranges>
 #include <algorithm>
+#include <cassert>
+#include <concepts>
+#include <initializer_list>
+#include <ranges>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 namespace prefixspan {
   namespace core {
-    namespace dbs {
-      template<typename sequence>
-      using value = std::ranges::range_value_t<sequence>;
+    template<typename sequence>
+    using sequence_value_type = std::ranges::range_value_t<sequence>;
 
-      template<typename sequence>
-      using iterator = std::ranges::iterator_t<sequence>;
+    template<typename sequence>
+    using sequence_iterator_type = std::ranges::iterator_t<sequence>;
 
-      template<typename sequence, typename symbol>
-      concept sequence_type = std::ranges::random_access_range<sequence> &&
-        std::ranges::sized_range<sequence> &&
-        std::same_as<value<sequence>, symbol>;
+    template<typename sequence, typename symbol>
+    concept sequence_type = std::ranges::random_access_range<sequence> &&
+      std::ranges::sized_range<sequence> &&
+      std::convertible_to<sequence_value_type<sequence>, symbol>;
 
-      template<typename database, typename symbol>
-      concept database_type = sequence_type<database, value<database>> &&
-        sequence_type<value<database>, symbol>;
-    } // namespace dbs
+    template<typename database, typename symbol>
+    concept database_type =
+      sequence_type<database, sequence_value_type<database>> &&
+      sequence_type<sequence_value_type<database>, symbol>;
 
-    template<typename symbol, dbs::database_type<symbol> database>
+    template<typename symbol, database_type<symbol> database>
     auto project(database const & db, symbol const & key) {
-      using iterator = dbs::iterator<const dbs::value<database>>;
+      using iterator =
+        sequence_iterator_type<sequence_value_type<database> const>;
       using subrange = std::ranges::subrange<iterator>;
       std::vector<subrange> out;
-      for (dbs::sequence_type<symbol> auto const & seq : db) {
+      for (sequence_type<symbol> auto const & seq : db) {
         iterator it = std::ranges::find(seq, key);
         if (it != seq.end()) {
           out.push_back(std::ranges::subrange(++it, seq.end()));
@@ -41,7 +43,7 @@ namespace prefixspan {
       return out;
     };
 
-    template<typename symbol, dbs::sequence_type<symbol> sequence>
+    template<typename symbol, core::sequence_type<symbol> sequence>
     std::vector<symbol> unique(sequence const & seq) {
       std::vector<symbol> out(std::ranges::begin(seq), std::ranges::end(seq));
       std::ranges::sort(out);
@@ -51,23 +53,113 @@ namespace prefixspan {
     }
   }; // namespace core
 
-  template<typename symbol, core::dbs::database_type<symbol> database>
-  trie<symbol> make_trie(database const & db, std::size_t const & minsup) {
-    trie<symbol> t(std::size(db));
+  template<typename symbol>
+  class trie {
+    std::size_t m_count = 0;
+    std::unordered_map<symbol, trie<symbol>> unfixed;
+    using index = std::unordered_map<symbol, trie<symbol>>;
+    using iterator = typename index::iterator;
+    using const_iterator = typename index::const_iterator;
 
-    std::unordered_map<symbol, std::size_t> symbol_count;
-    for (auto const & sequence : db) {
-      for (symbol key : core::unique<symbol>(sequence)) {
-        symbol_count[key] += 1;
+    public:
+
+    trie() = default;
+
+    trie(trie<symbol> const & other) noexcept = default;
+
+    trie(trie<symbol> && other) noexcept = default;
+
+    explicit trie<symbol>(std::size_t const & count) noexcept :
+      m_count(count){};
+
+    template<
+      core::database_type<symbol> database =
+        std::initializer_list<std::initializer_list<symbol>>>
+    trie(database const & db, std::size_t const & minsup) :
+      m_count(std::size(db)) {
+      std::unordered_map<symbol, std::size_t> symbol_count;
+      for (auto const & sequence : db) {
+        for (symbol key : core::unique<symbol>(sequence)) {
+          symbol_count[key] += 1;
+        }
+      }
+
+      for (auto const [k, c] : symbol_count) {
+        if (c >= minsup) {
+          this->insert(k, trie<symbol>(core::project<symbol>(db, k), minsup));
+        }
       }
     }
 
-    for (auto const [k, c] : symbol_count) {
-      if (c >= minsup) {
-        t.insert(k, make_trie<symbol>(core::project<symbol>(db, k), minsup));
+    trie<symbol> & operator=(trie<symbol> const & other) noexcept = default;
+
+    trie<symbol> & operator=(trie<symbol> && other) noexcept = default;
+
+    template<typename... arg_types>
+    iterator insert(symbol const & key, arg_types &&... args) {
+      auto [it, inserted] =
+        unfixed.try_emplace(key, std::forward<arg_types>(args)...);
+      if (inserted) {
+        return it;
       }
+      for (auto && [k, next] : trie<symbol>(std::forward<arg_types>(args)...)) {
+        it->second.insert(k, std::move(next));
+      }
+      return it;
+    };
+
+    void insert() {
+      insert(1);
+    };
+
+    void insert(std::size_t const & count) {
+      assert(count > 0);
+      m_count += count;
+    };
+
+    trie<symbol> & at(symbol const & key) {
+      return unfixed.at(key);
     }
 
-    return t;
-  }
+    trie<symbol> const & at(symbol const & key) const {
+      return unfixed.at(key);
+    };
+
+    trie<symbol> & operator[](symbol const & key) {
+      return unfixed[key];
+    };
+
+    bool contains(symbol const & key) const {
+      return unfixed.contains(key);
+    };
+
+    std::size_t count() const noexcept {
+      return m_count;
+    }
+
+    iterator begin() {
+      return unfixed.begin();
+    }
+
+    const_iterator begin() const {
+      return unfixed.begin();
+    }
+
+    iterator end() {
+      return unfixed.end();
+    }
+
+    const_iterator end() const {
+      return unfixed.end();
+    }
+
+    std::unordered_map<symbol, trie<symbol>> & unfix() noexcept {
+      return unfixed;
+    };
+
+    std::unordered_map<symbol, trie<symbol>> const & unfix() const noexcept {
+      return unfixed;
+    };
+  };
+
 }; // namespace prefixspan
