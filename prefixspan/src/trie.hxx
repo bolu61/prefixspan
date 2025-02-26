@@ -15,11 +15,11 @@ namespace prefixspan {
 
     public:
 
-    trie<symbol>() = default;
+    trie() = default;
 
-    trie<symbol>(trie<symbol> const & other) noexcept = default;
+    trie(trie<symbol> const & other) noexcept = default;
 
-    trie<symbol>(trie<symbol> && other) noexcept = default;
+    trie(trie<symbol> && other) noexcept = default;
 
     explicit trie<symbol>(std::size_t const & count) noexcept : m_count(count){};
 
