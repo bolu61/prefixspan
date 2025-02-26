@@ -20,7 +20,7 @@ using data = unsigned int;
 using sequence = nb::ndarray<data>;
 using database = std::vector<sequence>;
 
-std::string stringify(ps::trie<data> const & t) {
+std::string stringify(ps::prefixspan<data> const & t) {
   if (t.count() == 0) {
     return "";
   }
@@ -34,9 +34,9 @@ std::string stringify(ps::trie<data> const & t) {
 
 NB_MODULE(prefixspan, m) {
   m.def(
-    "make_trie",
+    "prefixspan",
     [](database const & db, std::size_t const & minsup) {
-      return ps::trie<data>(
+      return ps::prefixspan<data>(
         db | std::views::transform([](sequence const & s) {
           return std::ranges::subrange(s.data(), s.data() + s.size());
         }),
@@ -48,23 +48,23 @@ NB_MODULE(prefixspan, m) {
     nb::rv_policy::move
   );
 
-  nb::class_<ps::trie<data>>(m, "trie")
+  nb::class_<ps::prefixspan<data>>(m, "trie")
     .def(
       "__contains__",
-      [](ps::trie<data> const & t, data const & key) { return t.contains(key); }
+      [](ps::prefixspan<data> const & t, data const & key) { return t.contains(key); }
     )
     .def(
       "__getitem__",
-      [](ps::trie<data> const & t, data const & key) { return t.at(key); },
+      [](ps::prefixspan<data> const & t, data const & key) { return t.at(key); },
       nb::rv_policy::reference_internal,
       nb::keep_alive<0, 1>()
     )
-    .def_prop_ro("count", [](ps::trie<data> const & t) { return t.count(); }, nb::rv_policy::reference_internal)
+    .def_prop_ro("count", [](ps::prefixspan<data> const & t) { return t.count(); }, nb::rv_policy::reference_internal)
     .def(
       "__iter__",
-      [](ps::trie<data> const & t) {
+      [](ps::prefixspan<data> const & t) {
         return nb::make_iterator(
-          nb::type<ps::trie<data>>(),
+          nb::type<ps::prefixspan<data>>(),
           "iterator",
           t.begin(),
           t.end()
@@ -74,11 +74,11 @@ NB_MODULE(prefixspan, m) {
     )
     .def_prop_ro(
       "keys",
-      [](ps::trie<data> const & t) {
+      [](ps::prefixspan<data> const & t) {
         auto it = t |
           std::ranges::views::transform([](auto & item) { return item.first; });
         return nb::make_iterator(
-          nb::type<ps::trie<data>>(),
+          nb::type<ps::prefixspan<data>>(),
           "key_iterator",
           it.begin(),
           it.end()
@@ -86,7 +86,7 @@ NB_MODULE(prefixspan, m) {
       },
       nb::keep_alive<0, 1>()
     )
-    .def("__repr__", [](ps::trie<data> const & t) {
-      return "<prefixspan.trie " + stringify(t) + ">";
+    .def("__repr__", [](ps::prefixspan<data> const & t) {
+      return "<prefixspan " + stringify(t) + ">";
     });
 }

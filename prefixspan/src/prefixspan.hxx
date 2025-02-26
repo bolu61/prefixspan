@@ -54,28 +54,28 @@ namespace prefixspan {
   }; // namespace core
 
   template<typename symbol>
-  class trie {
+  class prefixspan {
     std::size_t m_count = 0;
-    std::unordered_map<symbol, trie<symbol>> unfixed;
-    using index = std::unordered_map<symbol, trie<symbol>>;
+    std::unordered_map<symbol, prefixspan<symbol>> unfixed;
+    using index = std::unordered_map<symbol, prefixspan<symbol>>;
     using iterator = typename index::iterator;
     using const_iterator = typename index::const_iterator;
 
     public:
 
-    trie() = default;
+    prefixspan() = default;
 
-    trie(trie<symbol> const & other) noexcept = default;
+    prefixspan(prefixspan<symbol> const & other) noexcept = default;
 
-    trie(trie<symbol> && other) noexcept = default;
+    prefixspan(prefixspan<symbol> && other) noexcept = default;
 
-    explicit trie<symbol>(std::size_t const & count) noexcept :
+    explicit prefixspan<symbol>(std::size_t const & count) noexcept :
       m_count(count){};
 
     template<
       core::database_type<symbol> database =
         std::initializer_list<std::initializer_list<symbol>>>
-    trie(database const & db, std::size_t const & minsup) :
+    prefixspan(database const & db, std::size_t const & minsup) :
       m_count(std::size(db)) {
       std::unordered_map<symbol, std::size_t> symbol_count;
       for (auto const & sequence : db) {
@@ -91,9 +91,9 @@ namespace prefixspan {
       }
     }
 
-    trie<symbol> & operator=(trie<symbol> const & other) noexcept = default;
+    prefixspan<symbol> & operator=(prefixspan<symbol> const & other) noexcept = default;
 
-    trie<symbol> & operator=(trie<symbol> && other) noexcept = default;
+    prefixspan<symbol> & operator=(prefixspan<symbol> && other) noexcept = default;
 
     template<typename... arg_types>
     iterator insert(symbol const & key, arg_types &&... args) {
@@ -102,7 +102,7 @@ namespace prefixspan {
       if (inserted) {
         return it;
       }
-      for (auto && [k, next] : trie<symbol>(std::forward<arg_types>(args)...)) {
+      for (auto && [k, next] : prefixspan<symbol>(std::forward<arg_types>(args)...)) {
         it->second.insert(k, std::move(next));
       }
       return it;
@@ -117,15 +117,15 @@ namespace prefixspan {
       m_count += count;
     };
 
-    trie<symbol> & at(symbol const & key) {
+    prefixspan<symbol> & at(symbol const & key) {
       return unfixed.at(key);
     }
 
-    trie<symbol> const & at(symbol const & key) const {
+    prefixspan<symbol> const & at(symbol const & key) const {
       return unfixed.at(key);
     };
 
-    trie<symbol> & operator[](symbol const & key) {
+    prefixspan<symbol> & operator[](symbol const & key) {
       return unfixed[key];
     };
 
@@ -153,11 +153,11 @@ namespace prefixspan {
       return unfixed.end();
     }
 
-    std::unordered_map<symbol, trie<symbol>> & unfix() noexcept {
+    std::unordered_map<symbol, prefixspan<symbol>> & unfix() noexcept {
       return unfixed;
     };
 
-    std::unordered_map<symbol, trie<symbol>> const & unfix() const noexcept {
+    std::unordered_map<symbol, prefixspan<symbol>> const & unfix() const noexcept {
       return unfixed;
     };
   };
