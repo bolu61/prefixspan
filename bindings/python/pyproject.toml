@@ -7,12 +7,8 @@ name = "prefixspan"
 version = "0.1.0"
 description = "Bindings to a simple c++ prefixspan implementation."
 requires-python = ">=3.11"
-authors = [
-  { name = "bolu", email = "bolu@bolupi.me" },
-]
-dependencies = [
-  "numpy"
-]
+authors = [{ name = "bolu", email = "bolu@bolupi.me" }]
+dependencies = ["numpy"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python",
@@ -37,3 +33,4 @@ Source = "https://github.com/bolu61/prefixspan"
 minimum-version = "0.10"
 cmake.source-dir = "../.."
 build.targets = ["prefixspan_python_ext_stub"]
+cmake.define = { "BUILD_TESTING" = "OFF" }
