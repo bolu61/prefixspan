@@ -84,16 +84,23 @@ namespace prefixspan {
         }
       }
 
-      for (auto const [k, c] : symbol_count) {
-        if (c >= minsup) {
-          this->insert(k, prefixspan<symbol>(core::project<symbol>(db, k), minsup));
+      #pragma omp parallel
+      #pragma omp single
+      for (auto const entry : symbol_count) {
+        symbol key = entry.first;
+        std::size_t count = entry.second;
+        if (count >= minsup) {
+          #pragma omp task if(this->m_count > 10000)
+          this->insert(key, core::project<symbol>(db, key), minsup);
         }
       }
     }
 
-    prefixspan<symbol> & operator=(prefixspan<symbol> const & other) noexcept = default;
+    prefixspan<symbol> & operator=(prefixspan<symbol> const & other
+    ) noexcept = default;
 
-    prefixspan<symbol> & operator=(prefixspan<symbol> && other) noexcept = default;
+    prefixspan<symbol> & operator=(prefixspan<symbol> && other
+    ) noexcept = default;
 
     template<typename... arg_types>
     iterator insert(symbol const & key, arg_types &&... args) {
@@ -102,19 +109,11 @@ namespace prefixspan {
       if (inserted) {
         return it;
       }
-      for (auto && [k, next] : prefixspan<symbol>(std::forward<arg_types>(args)...)) {
+      for (auto && [k, next] :
+           prefixspan<symbol>(std::forward<arg_types>(args)...)) {
         it->second.insert(k, std::move(next));
       }
       return it;
-    };
-
-    void insert() {
-      insert(1);
-    };
-
-    void insert(std::size_t const & count) {
-      assert(count > 0);
-      m_count += count;
     };
 
     prefixspan<symbol> & at(symbol const & key) {
@@ -157,7 +156,8 @@ namespace prefixspan {
       return unfixed;
     };
 
-    std::unordered_map<symbol, prefixspan<symbol>> const & unfix() const noexcept {
+    std::unordered_map<symbol, prefixspan<symbol>> const &
+    unfix() const noexcept {
       return unfixed;
     };
   };
