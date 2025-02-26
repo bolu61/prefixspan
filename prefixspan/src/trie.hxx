@@ -68,19 +68,19 @@ namespace prefixspan {
       return m_count;
     }
 
-    std::unordered_map<symbol, trie<symbol>>::iterator begin() {
+    iterator begin() {
       return unfixed.begin();
     }
 
-    std::unordered_map<symbol, trie<symbol>>::const_iterator begin() const {
+    const_iterator begin() const {
       return unfixed.begin();
     }
 
-    std::unordered_map<symbol, trie<symbol>>::iterator end() {
+    iterator end() {
       return unfixed.end();
     }
 
-    std::unordered_map<symbol, trie<symbol>>::const_iterator end() const {
+    const_iterator end() const {
       return unfixed.end();
     }
 
