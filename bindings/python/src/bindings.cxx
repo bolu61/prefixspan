@@ -17,7 +17,7 @@ namespace nb = nanobind;
 namespace ps = prefixspan;
 
 using data = unsigned int;
-using sequence = nb::ndarray<data>;
+using sequence = std::vector<data>;
 using database = std::vector<sequence>;
 
 std::string stringify(ps::prefixspan<data> const & t) {
@@ -48,18 +48,31 @@ NB_MODULE(prefixspan, m) {
     nb::rv_policy::move
   );
 
-  nb::class_<ps::prefixspan<data>>(m, "trie")
+  nb::class_<ps::prefixspan<data>>(m, "prefixspan")
+    .def(
+      nb::init<database const &, std::size_t>(),
+      nb::arg("db"),
+      nb::arg("minsup")
+    )
     .def(
       "__contains__",
-      [](ps::prefixspan<data> const & t, data const & key) { return t.contains(key); }
+      [](ps::prefixspan<data> const & t, data const & key) {
+        return t.contains(key);
+      }
     )
     .def(
       "__getitem__",
-      [](ps::prefixspan<data> const & t, data const & key) { return t.at(key); },
+      [](ps::prefixspan<data> const & t, data const & key) {
+        return t.at(key);
+      },
       nb::rv_policy::reference_internal,
       nb::keep_alive<0, 1>()
     )
-    .def_prop_ro("count", [](ps::prefixspan<data> const & t) { return t.count(); }, nb::rv_policy::reference_internal)
+    .def_prop_ro(
+      "count",
+      [](ps::prefixspan<data> const & t) { return t.count(); },
+      nb::rv_policy::reference_internal
+    )
     .def(
       "__iter__",
       [](ps::prefixspan<data> const & t) {
