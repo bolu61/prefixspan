@@ -10,8 +10,8 @@ namespace prefixspan {
     std::size_t m_count = 0;
     std::unordered_map<symbol, trie<symbol>> unfixed;
     using index = std::unordered_map<symbol, trie<symbol>>;
-    using iterator = index::iterator;
-    using const_iterator = index::const_iterator;
+    using iterator = typename index::iterator;
+    using const_iterator = typename index::const_iterator;
 
     public:
 
