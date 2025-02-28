@@ -69,19 +69,6 @@ namespace prefixspan {
     std::size_t m_count = 0;
     index unfixed;
 
-    template<typename... arg_types>
-    iterator insert(symbol const & key, arg_types &&... args) {
-      auto [it, inserted] =
-        unfixed.try_emplace(key, std::forward<arg_types>(args)...);
-      if (inserted) {
-        return it;
-      }
-      for (auto && [k, next] : prefixspan<symbol>(std::forward<arg_types>(args)...)) {
-        it->second.insert(k, std::move(next));
-      }
-      return it;
-    };
-
     public:
 
     prefixspan() = default;
@@ -108,7 +95,12 @@ namespace prefixspan {
         std::size_t count = entry.second;
         if (count >= minsup) {
           #pragma omp task
-          this->insert(key, project(db, key), minsup);
+          {
+            auto projected_prefixspan = prefixspan<symbol>(project(db, key), minsup);
+            #pragma omp critical
+            auto [it, inserted] = this->unfixed.try_emplace(key, std::move(projected_prefixspan));
+            assert(inserted);
+          }
         }
       }
     }
