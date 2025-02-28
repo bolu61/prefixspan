@@ -8,4 +8,3 @@ set(CMAKE_CXX_STANDARD_REQUIRED On)
 set(CMAKE_CXX_EXTENSIONS Off)
 
 add_subdirectory(prefixspan)
-add_subdirectory(bindings/python)
