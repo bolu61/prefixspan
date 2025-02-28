@@ -98,8 +98,10 @@ namespace prefixspan {
           {
             auto projected_prefixspan = prefixspan<symbol>(project(db, key), minsup);
             #pragma omp critical
-            auto [it, inserted] = this->unfixed.try_emplace(key, std::move(projected_prefixspan));
-            assert(inserted);
+            {
+              auto [it, inserted] = this->unfixed.try_emplace(key, std::move(projected_prefixspan));
+              assert(inserted);
+            }
           }
         }
       }
