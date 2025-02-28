@@ -34,10 +34,10 @@ std::string stringify(ps::prefixspan<data> const & t) {
 
 NB_MODULE(prefixspan, m) {
   m.def(
-    "prefixspan",
-    [](database const & db, std::size_t const & minsup) {
+    "prefixspan_from_buffer",
+    [](std::vector<nb::ndarray<data>> const & db, std::size_t const & minsup) {
       return ps::prefixspan<data>(
-        db | std::views::transform([](sequence const & s) {
+        db | std::views::transform([](nb::ndarray<data> const & s) {
           return std::ranges::subrange(s.data(), s.data() + s.size());
         }),
         minsup

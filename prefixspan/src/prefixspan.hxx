@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <concepts>
 #include <initializer_list>
 #include <ranges>
 #include <unordered_map>
@@ -12,54 +11,76 @@
 
 namespace prefixspan {
   namespace core {
-    template<typename sequence>
-    using sequence_value_type = std::ranges::range_value_t<sequence>;
+    namespace ranges = std::ranges;
 
-    template<typename sequence>
-    using sequence_iterator_type = std::ranges::iterator_t<sequence>;
+    template<typename type>
+    using vector = std::vector<type>;
 
-    template<typename sequence, typename symbol>
-    concept sequence_type = std::ranges::random_access_range<sequence> &&
-      std::ranges::sized_range<sequence> &&
-      std::convertible_to<sequence_value_type<sequence>, symbol>;
+    namespace databases {
 
-    template<typename database, typename symbol>
-    concept database_type =
-      sequence_type<database, sequence_value_type<database>> &&
-      sequence_type<sequence_value_type<database>, symbol>;
+      template<typename type>
+      concept database =
+        ranges::range<type> && ranges::forward_range<ranges::range_value_t<type>>;
 
-    template<typename symbol, database_type<symbol> database>
-    auto project(database const & db, symbol const & key) {
-      using iterator =
-        sequence_iterator_type<sequence_value_type<database> const>;
-      using subrange = std::ranges::subrange<iterator>;
+      template<database db_type>
+      using range_t = ranges::range_value_t<db_type>;
+
+      template<database db_type>
+      using value_t = ranges::range_value_t<range_t<db_type>>;
+
+      template<database db_type>
+      using iterator_t = ranges::iterator_t<range_t<db_type>>;
+
+      template<database db_type>
+      using const_iterator_t = decltype(ranges::cbegin(std::declval<range_t<db_type> &>()));
+    } // namespace databases
+
+    template<databases::database db_type>
+    auto project(db_type const & db, databases::value_t<db_type> const & key) {
+      using subrange = ranges::subrange<databases::const_iterator_t<db_type>>;
       std::vector<subrange> out;
-      for (sequence_type<symbol> auto const & seq : db) {
-        iterator it = std::ranges::find(seq, key);
+      for (databases::range_t<db_type> const & seq : db) {
+        auto it = ranges::find(seq, key);
         if (it != seq.end()) {
-          out.push_back(std::ranges::subrange(++it, seq.end()));
+          out.emplace_back(++it, seq.end());
         }
       }
       return out;
     };
 
-    template<typename symbol, core::sequence_type<symbol> sequence>
-    std::vector<symbol> unique(sequence const & seq) {
-      std::vector<symbol> out(std::ranges::begin(seq), std::ranges::end(seq));
-      std::ranges::sort(out);
-      auto [first, last] = std::ranges::unique(out);
+    template<ranges::range seq_type>
+    auto unique(seq_type const & seq) {
+      std::vector<ranges::range_value_t<seq_type>> out(seq.begin(), seq.end());
+      ranges::sort(out);
+      auto [first, last] = ranges::unique(out);
       out.erase(first, last);
       return out;
     }
   }; // namespace core
 
+  using namespace core;
+
   template<typename symbol>
   class prefixspan {
-    std::size_t m_count = 0;
-    std::unordered_map<symbol, prefixspan<symbol>> unfixed;
     using index = std::unordered_map<symbol, prefixspan<symbol>>;
     using iterator = typename index::iterator;
     using const_iterator = typename index::const_iterator;
+
+    std::size_t m_count = 0;
+    index unfixed;
+
+    template<typename... arg_types>
+    iterator insert(symbol const & key, arg_types &&... args) {
+      auto [it, inserted] =
+        unfixed.try_emplace(key, std::forward<arg_types>(args)...);
+      if (inserted) {
+        return it;
+      }
+      for (auto && [k, next] : prefixspan<symbol>(std::forward<arg_types>(args)...)) {
+        it->second.insert(k, std::move(next));
+      }
+      return it;
+    };
 
     public:
 
@@ -69,17 +90,13 @@ namespace prefixspan {
 
     prefixspan(prefixspan<symbol> && other) noexcept = default;
 
-    explicit prefixspan<symbol>(std::size_t const & count) noexcept :
-      m_count(count){};
+    explicit prefixspan<symbol>(std::size_t const & count) noexcept : m_count(count){};
 
-    template<
-      core::database_type<symbol> database =
-        std::initializer_list<std::initializer_list<symbol>>>
-    prefixspan(database const & db, std::size_t const & minsup) :
-      m_count(std::size(db)) {
+    template<databases::database db_type = std::initializer_list<std::initializer_list<symbol>>>
+    prefixspan(db_type const & db, std::size_t const & minsup) : m_count(std::size(db)) {
       std::unordered_map<symbol, std::size_t> symbol_count;
       for (auto const & sequence : db) {
-        for (symbol key : core::unique<symbol>(sequence)) {
+        for (symbol key : unique<databases::range_t<db_type>>(sequence)) {
           symbol_count[key] += 1;
         }
       }
@@ -90,31 +107,15 @@ namespace prefixspan {
         symbol key = entry.first;
         std::size_t count = entry.second;
         if (count >= minsup) {
-          #pragma omp task if(this->m_count > 10000)
-          this->insert(key, core::project<symbol>(db, key), minsup);
+          #pragma omp task
+          this->insert(key, project(db, key), minsup);
         }
       }
     }
 
-    prefixspan<symbol> & operator=(prefixspan<symbol> const & other
-    ) noexcept = default;
+    prefixspan<symbol> & operator=(prefixspan<symbol> const & other) noexcept = default;
 
-    prefixspan<symbol> & operator=(prefixspan<symbol> && other
-    ) noexcept = default;
-
-    template<typename... arg_types>
-    iterator insert(symbol const & key, arg_types &&... args) {
-      auto [it, inserted] =
-        unfixed.try_emplace(key, std::forward<arg_types>(args)...);
-      if (inserted) {
-        return it;
-      }
-      for (auto && [k, next] :
-           prefixspan<symbol>(std::forward<arg_types>(args)...)) {
-        it->second.insert(k, std::move(next));
-      }
-      return it;
-    };
+    prefixspan<symbol> & operator=(prefixspan<symbol> && other) noexcept = default;
 
     prefixspan<symbol> & at(symbol const & key) {
       return unfixed.at(key);

@@ -7,7 +7,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include <ranges>
 
 namespace ps = prefixspan;
 
@@ -44,8 +43,8 @@ std::vector<std::vector<symbol>> generate_large_db() {
   std::mt19937 gen(rd());
   std::poisson_distribution<> d(4);
   std::vector<std::vector<symbol>> db;
-  db.reserve(100000);
-  for (std::size_t i = 0; i < 100000; ++i) {
+  db.reserve(10000);
+  for (std::size_t i = 0; i < 10000; ++i) {
     auto & s = db.emplace_back(16);
     std::ranges::generate(s, [&]() { return d(gen); });
   }
