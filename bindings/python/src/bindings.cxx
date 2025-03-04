@@ -63,15 +63,13 @@ NB_MODULE(prefixspan, m) {
     .def(
       "__getitem__",
       [](ps::prefixspan<data> const & t, data const & key) {
-        return t.at(key);
+        return &t.at(key);
       },
-      nb::rv_policy::reference_internal,
-      nb::keep_alive<0, 1>()
+      nb::rv_policy::reference_internal
     )
     .def_prop_ro(
       "count",
-      [](ps::prefixspan<data> const & t) { return t.count(); },
-      nb::rv_policy::reference_internal
+      [](ps::prefixspan<data> const & t) { return t.count(); }
     )
     .def(
       "__iter__",
