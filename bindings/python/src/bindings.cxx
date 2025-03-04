@@ -9,7 +9,6 @@
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/vector.h>
 #include <numeric>
-#include <ranges>
 #include <string>
 #include <vector>
 
@@ -69,12 +68,13 @@ NB_MODULE(prefixspan, m) {
     )
     .def_prop_ro(
       "count",
-      [](ps::prefixspan<data> const & t) { return t.count(); }
+      [](ps::prefixspan<data> const & t) { return t.count(); },
+      nb::rv_policy::reference_internal
     )
     .def(
       "__iter__",
       [](ps::prefixspan<data> const & t) {
-        return nb::make_iterator(
+        return nb::make_iterator<nb::rv_policy::reference_internal>(
           nb::type<ps::prefixspan<data>>(),
           "iterator",
           t.begin(),
