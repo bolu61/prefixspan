@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
 set(CMAKE_CXX_EXTENSIONS Off)
 
-add_library(prefixspan INTERFACE src/prefixspan.hxx)
+add_library(prefixspan INTERFACE)
 target_include_directories(prefixspan INTERFACE src)
 
 if (BUILD_TESTING)
