@@ -1,6 +1,6 @@
 # prefixspan
 
-C++20 implementation of PrefixSpan pattern matching algorithm.
+C++20 implementation of PrefixSpan pattern mining algorithm.
 
 ## Quick Start
 
